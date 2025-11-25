@@ -1,41 +1,46 @@
-<form>
-	<div class="form-group">
-		<div class="form-check">
-			<input class="form-check-input" type="checkbox" id="editor-wordwrap" 
+<form class="uk-form-stacked ifm-editor-options">
+	<div class="uk-margin-small">
+		<label class="uk-form-label" for="editor-wordwrap">
+			<input class="uk-checkbox" type="checkbox" id="editor-wordwrap" 
 				{{#wordwrap}}
 				checked="checked"
 				{{/wordwrap}}
 			>
-			<label class="form-check-label" for="editor-wordwrap">{{i18n.word_wrap}}</label>
-		</div>
-		<div class="form-check">
-			<input class="form-check-input" type="checkbox" id="editor-invisible-chars"
+			{{i18n.word_wrap}}
+		</label>
+	</div>
+	<div class="uk-margin-small">
+		<label class="uk-form-label" for="editor-invisible-chars">
+			<input class="uk-checkbox" type="checkbox" id="editor-invisible-chars"
 				{{#invisible_chars}}
 				checked="checked"
 				{{/invisible_chars}}
 			>
-			<label class="form-check-label" for="editor-invisible-chars">{{i18n.invisible_chars}}</label>
-		</div>
-		<div class="form-check">
-			<input class="form-check-input" type="checkbox" id="editor-softtabs"
+			{{i18n.invisible_chars}}
+		</label>
+	</div>
+	<div class="uk-margin-small">
+		<label class="uk-form-label" for="editor-softtabs">
+			<input class="uk-checkbox" type="checkbox" id="editor-softtabs"
 				{{#softtabs}}
 				checked="checked"
 				{{/softtabs}}
 			>
-			<label class="form-check-label" for="editor-softtabs">{{i18n.soft_tabs}}</label>
-		</div>
+			{{i18n.soft_tabs}}
+		</label>
 	</div>
-	<div class="input-group">
-		<div class="input-group-prepend">
-			<span class="input-group-text" id="editor-tabsize-label">{{i18n.tab_size}}</span>
-		</div>
-		<input class="form-control" type="number" min="1" max="9" maxlength="1" id="editor-tabsize" title="{{i18n.tab_size}}" value="{{tabsize}}" aria-describedby="editor-tabsize-label">
+	<div class="uk-margin-small">
+		<label class="uk-form-label" for="editor-tabsize" id="editor-tabsize-label">{{i18n.tab_size}}</label>
+		<input class="uk-input uk-form-small" type="number" min="1" max="9" maxlength="1" id="editor-tabsize" title="{{i18n.tab_size}}" value="{{tabsize}}" aria-describedby="editor-tabsize-label">
 	</div>
 	{{#ace_includes}}
-	<select class="form-control selectpicker" data-toggle="dropdown" data-live-search="true" data-size="15" id="editor-syntax">
-		{{#modes}}
-		<option value="ace/mode/{{.}}" {{{ace_mode_selected}}}>{{.}}</option>
-		{{/modes}}
-	</select>
+	<div class="uk-margin-small">
+		<label class="uk-form-label" for="editor-syntax">Syntax</label>
+		<select class="uk-select uk-form-small" id="editor-syntax">
+			{{#modes}}
+			<option value="ace/mode/{{.}}" {{{ace_mode_selected}}}>{{.}}</option>
+			{{/modes}}
+		</select>
+	</div>
 	{{/ace_includes}}
 </form>

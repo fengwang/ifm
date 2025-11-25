@@ -1,20 +1,21 @@
 <form id="formUploadFile">
-<div class="modal-body">
-	<fieldset>
-		<div class="form-group">
-			<div class="custom-file">
-				<label class="custom-file-label" for="fileselect">{{i18n.upload_file}}</label>
-				<input class="custom-file-input" type="file" name="files" id="fileselect" multiple>
+	<div class="uk-modal-body ifm-modal-body">
+		<fieldset class="uk-fieldset">
+			<div class="uk-margin">
+				<label class="uk-form-label" for="fileselect">{{i18n.upload_file}}</label>
+				<div uk-form-custom="target: #fileselect-label" class="uk-width-1-1">
+					<input class="uk-input" type="file" name="files" id="fileselect" multiple>
+					<input id="fileselect-label" class="uk-input uk-border-pill" type="text" placeholder="{{i18n.upload_file}}" disabled>
+				</div>
 			</div>
-		</div>
-		<div class="form-group">
-			<label for="filename">{{i18n.filename_new}}</label>
-			<input class="form-control" type="text" name="newfilename" id="filename">
-		</div>
-	</fieldset>
-</div>
-<div class="modal-footer">
-	<button class="btn btn-primary" id="buttonUpload">{{i18n.upload}}</button>
-	<button class="btn btn-danger" id="buttonCancel">{{i18n.cancel}}</button>
-</div>
+			<div class="uk-margin">
+				<label class="uk-form-label" for="filename">{{i18n.filename_new}}</label>
+				<input class="uk-input" type="text" name="newfilename" id="filename">
+			</div>
+		</fieldset>
+	</div>
+	<div class="uk-modal-footer uk-text-right">
+		<button class="uk-button uk-button-primary uk-border-pill" id="buttonUpload">{{i18n.upload}}</button>
+		<button class="uk-button uk-button-default uk-border-pill" id="buttonCancel">{{i18n.cancel}}</button>
+	</div>
 </form>

@@ -1,31 +1,31 @@
 <form id="formAjaxRequest">
-<div class="modal-body">
-	<fieldset>
-		<div class="form-group">
-			<label for="ajaxurl">URL</label>
-			<input class="form-control" type="url" id="ajaxurl" required>
-		</div>
-		<div class="form-group">
-			<label for="ajaxdata">{{i18n.data}}</label>
-			<textarea class="form-control" id="ajaxdata"></textarea>
-		</div>
-		<div class="form-group">
-			<legend>{{i18n.method}}</legend>
-			<div class="form-check form-check-inline">
-				<input class="form-check-input" type="radio" id="radioget" name="arMethod" value="GET">
-				<label class="form-check-label" for="radioget">GET</label>
+	<div class="uk-modal-body ifm-modal-body">
+		<fieldset>
+			<div class="uk-margin">
+				<label class="uk-form-label" for="ajaxurl">URL</label>
+				<input class="uk-input" type="url" id="ajaxurl" required>
 			</div>
-			<div class="form-check form-check-inline">
-				<input class="form-check-input" type="radio" id="radiopost" name="arMethod" value="POST" checked="checked">
-				<label class="form-check-label" for="radiopost">POST</label>
+			<div class="uk-margin">
+				<label class="uk-form-label" for="ajaxdata">{{i18n.data}}</label>
+				<textarea class="uk-textarea" id="ajaxdata" rows="4"></textarea>
 			</div>
-		</div>
-		<button type="button" class="btn btn-success" id="buttonRequest">{{i18n.request}}</button>
-		<button type="button" class="btn btn-danger" id="buttonClose">{{i18n.cancel}}</button>
-		<div class="form-group">
-			<label for="ajaxresponse">{{i18n.response}}</label>
-			<textarea class="form-control" id="ajaxresponse"></textarea>
-		</div>
-	</fieldset>
-</div>
+			<div class="uk-margin">
+				<legend class="uk-form-label">{{i18n.method}}</legend>
+				<div class="uk-grid-small uk-child-width-auto uk-flex-middle" uk-grid>
+					<label><input class="uk-radio" type="radio" id="radioget" name="arMethod" value="GET"> GET</label>
+					<label><input class="uk-radio" type="radio" id="radiopost" name="arMethod" value="POST" checked="checked"> POST</label>
+				</div>
+			</div>
+			<div class="uk-margin uk-flex uk-flex-between uk-flex-middle">
+				<div>
+					<button type="button" class="uk-button uk-button-primary uk-border-pill" id="buttonRequest">{{i18n.request}}</button>
+					<button type="button" class="uk-button uk-button-default uk-border-pill" id="buttonClose">{{i18n.cancel}}</button>
+				</div>
+			</div>
+			<div class="uk-margin">
+				<label class="uk-form-label" for="ajaxresponse">{{i18n.response}}</label>
+				<textarea class="uk-textarea" id="ajaxresponse" rows="4"></textarea>
+			</div>
+		</fieldset>
+	</div>
 </form>

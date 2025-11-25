@@ -1,15 +1,15 @@
 <form id="formUploadConfirmOverwrite">
-<div class="modal-body">
-{{i18n.upload_overwrite_hint}}
-<ul>
-{{#files}}
-<li>{{.}}</li>
-{{/files}}
-</ul>
-{{i18n.upload_overwrite_confirm}}
-</div>
-<div class="modal-footer">
-	<button class="btn btn-primary" id="buttonConfirm">{{i18n.upload}}</button>
-	<button class="btn btn-danger" id="buttonCancel">{{i18n.cancel}}</button>
-</div>
+	<div class="uk-modal-body ifm-modal-body">
+		<p class="uk-text-bold">{{i18n.upload_overwrite_hint}}</p>
+		<ul class="uk-list uk-list-striped uk-margin-small-top">
+		{{#files}}
+		<li>{{.}}</li>
+		{{/files}}
+		</ul>
+		<p class="uk-margin-small-top">{{i18n.upload_overwrite_confirm}}</p>
+	</div>
+	<div class="uk-modal-footer uk-text-right">
+		<button class="uk-button uk-button-primary uk-border-pill" id="buttonConfirm">{{i18n.upload}}</button>
+		<button class="uk-button uk-button-default uk-border-pill" id="buttonCancel">{{i18n.cancel}}</button>
+	</div>
 </form>

@@ -1,9 +1,8 @@
 <script>
 ###file:src/includes/jquery.min.js###
 ###file:src/includes/jquery-ui.min.js###
-###file:src/includes/popper.min.js###
-###file:src/includes/bootstrap.min.js###
-###file:src/includes/bootstrap-notify.min.js###
+###file:src/includes/uikit/js/uikit.min.js###
+###file:src/includes/uikit/js/uikit-icons.min.js###
 ###file:src/includes/bootstrap-treeview.min.js###
 ###file:src/includes/datatables.min.js###
 ###file:src/includes/lodash.min.js###

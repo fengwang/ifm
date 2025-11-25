@@ -47,4 +47,4 @@ COPY docker/docker-startup.sh /usr/local/bin
 # start php server
 WORKDIR /usr/local/share/webapps/ifm
 EXPOSE 80
-CMD /usr/local/bin/docker-startup.sh
+CMD ["/usr/local/bin/docker-startup.sh"]

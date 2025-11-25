@@ -1,10 +1,15 @@
-<footer class="footer mt-auto py-3">
-	<div id="wq_container" class="container">
-		<div class="row">
-			<div class="col-md-2 mb-1">
-				<a type="button" class="btn btn-light btn-block" name="showAll">{{i18n.tasks}} <span class="badge badge-secondary" name="taskCount">1</span></a>
-			</div>
-			<div id="waitqueue" class="col-md-10">
+<footer class="ifm-footer uk-position-fixed uk-position-bottom uk-position-medium uk-width-expand">
+	<div id="wq_container" class="uk-container uk-container-expand">
+		<div class="ifm-taskbar uk-card uk-card-default uk-card-body uk-padding-small uk-box-shadow-large">
+			<div class="uk-grid-small uk-flex-middle" uk-grid>
+				<div>
+					<button type="button" class="uk-button uk-button-text uk-text-bold" name="showAll">
+						<span uk-icon="list"></span> {{i18n.tasks}} <span class="uk-badge" name="taskCount">1</span>
+					</button>
+				</div>
+				<div class="uk-width-expand">
+					<div id="waitqueue"></div>
+				</div>
 			</div>
 		</div>
 	</div>

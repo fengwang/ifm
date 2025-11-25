@@ -1,49 +1,55 @@
 {{#items}}
 <tr class="clickable-row {{rowclasses}}" {{{dragdrop}}} data-id="{{guid}}" data-filename="{{name}}" data-eaction="{{eaction}}">
 	{{#fixtop}}
-	<td data-order="{{fixtop}}"></td>
+	<td class="uk-table-shrink" data-order="{{fixtop}}"></td>
 	{{/fixtop}}
 	{{^fixtop}}
-	<td data-order="0"></td>
+	<td class="uk-table-shrink" data-order="0"></td>
 	{{/fixtop}}
-	<td>
-		<a href="{{{link}}}" tabindex="0" id="{{guid}}" class="ifmitem" {{{popover}}} data-type="{{type}}">
+	<td class="uk-text-truncate">
+		<a href="{{{link}}}" tabindex="0" id="{{guid}}" class="ifmitem uk-link-reset" {{#preview}}data-preview="image"{{/preview}} data-type="{{type}}">
 			<span class="{{icon}}"></span>
 			{{linkname}}
 		</a>
 	</td>
 	{{#config.download}}
-	<td>
-		<a href="{{download.link}}"><span class="{{download.icon}}"></span></a>
+	<td class="uk-text-center uk-table-shrink">
+		<a class="uk-icon-button uk-button-default uk-border-circle ifm-icon-button" href="{{download.link}}" uk-tooltip="title: {{i18n.download}}">
+			<span class="{{download.icon}}"></span>
+		</a>
 	</td>
 	{{/config.download}}
 	{{#config.showlastmodified}}
-	<td data-order="{{lastmodified}}">{{lastmodified_hr}}</td>
+	<td class="uk-visible@s" data-order="{{lastmodified}}">{{lastmodified_hr}}</td>
 	{{/config.showlastmodified}}
 	{{#config.showfilesize}}
-	<td data-order="{{size_raw}}">{{size}}</td>
+	<td class="uk-visible@s uk-text-right" data-order="{{size_raw}}">{{size}}</td>
 	{{/config.showfilesize}}
 	{{#config.showpermissions}}
-	<td class="d-none d-md-table-cell">
-		<input type="text" size="11" name="newpermissions" class="form-control {{filepermmode}}" value="{{fileperms}}" data-filename="{{name}}" {{readonly}}>
+	<td class="uk-visible@m uk-text-center">
+		<input type="text" size="11" name="newpermissions" class="uk-input uk-form-small ifm-permission-input {{filepermmode}}" value="{{fileperms}}" data-filename="{{name}}" {{readonly}}>
 	</td>
 	{{/config.showpermissions}}
 	{{#config.showowner}}
-	<td class="d-none d-lg-table-cell">
+	<td class="uk-visible@l">
 		{{owner}}
 	</td>
 	{{/config.showowner}}
 	{{#config.showgroup}}
-	<td class="d-none d-xl-table-cell">
+	<td class="uk-visible@xl">
 		{{group}}
 	</td>
 	{{/config.showgroup}}
-	<td>
-		{{#button}}
-		<a tabindex="0" name="do-{{action}}" data-id="{{guid}}">
-			<span class="{{icon}}" title="{{title}}"</span>
-		</a>
-		{{/button}}
+	<td class="uk-table-shrink">
+		<div class="uk-flex uk-flex-right uk-flex-middle uk-grid-small ifm-row-actions" uk-grid>
+			{{#button}}
+			<div>
+				<a tabindex="0" name="do-{{action}}" data-id="{{guid}}" class="uk-icon-button uk-button-default uk-border-circle ifm-icon-button" uk-tooltip="title: {{title}}">
+					<span class="{{icon}}"></span>
+				</a>
+			</div>
+			{{/button}}
+		</div>
 	</td>
 </tr>
 {{/items}}

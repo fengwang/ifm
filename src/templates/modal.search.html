@@ -1,12 +1,12 @@
 <form id="searchForm">
-<div class="modal-body">
-	<fieldset>
-		<div class="form-group">
-			<label for="searchPattern">{{i18n.search}}</label>
-			<input type="search" class="form-control" id="searchPattern" name="pattern" autocomplete="off" value="{{lastSearch}}">
-		</div>
-		<table id="searchResults" class="table">
-		</table>
-	</fieldset>
-</div>
+	<div class="uk-modal-body ifm-modal-body">
+		<fieldset>
+			<div class="uk-margin">
+				<label class="uk-form-label" for="searchPattern">{{i18n.search}}</label>
+				<input type="search" class="uk-input" id="searchPattern" name="pattern" autocomplete="off" value="{{lastSearch}}">
+			</div>
+			<table id="searchResults" class="uk-table uk-table-divider uk-table-small">
+			</table>
+		</fieldset>
+	</div>
 </form>

@@ -27,8 +27,12 @@ function IFM(params) {
 
 	this.datatable = null; // Reference for the data table
 
+	this.modalInstance = null;
+	this.modalElement = null;
+	this.previewCard = null;
+
 	/**
-	 * Shows a bootstrap modal
+	 * Shows a UIkit modal
 	 *
 	 * @param {string} content - HTML content of the modal
 	 * @param {object} options - options for the modal ({ large: false })
@@ -36,47 +40,72 @@ function IFM(params) {
 	this.showModal = function( content, options, modal_options ) {
 		options = options || {};
 		let modal = document.createElement( 'div' );
-		modal.classList.add( 'modal' );
+		modal.classList.add( 'uk-flex-top' );
 		modal.id = 'ifmmodal';
-		modal.attributes.role = 'dialog';
+		modal.setAttribute( 'uk-modal', '' );
+
 		let modalDialog = document.createElement( 'div' );
-		modalDialog.classList.add( 'modal-dialog' );
-		modalDialog.attributes.role = 'document';
-		if( options.large == true ) modalDialog.classList.add( 'modal-lg' );
-		let modalContent = document.createElement('div');
-		modalContent.classList.add( 'modal-content' );
-		modalContent.innerHTML = content;
-		modalDialog.appendChild( modalContent );
+		modalDialog.className = 'uk-modal-dialog uk-margin-auto-vertical';
+		if( options.large === true ) modalDialog.classList.add( 'uk-width-2xlarge' );
+		modalDialog.innerHTML = content;
+
+		let closable = true;
+		let modalOptions = { bgClose: true, escClose: true, stack: true };
+		if( modal_options ) {
+			if( modal_options.backdrop === 'static' ) modalOptions.bgClose = false;
+			if( modal_options.keyboard === false ) modalOptions.escClose = false;
+			if( typeof modal_options.bgClose !== 'undefined' ) modalOptions.bgClose = modal_options.bgClose;
+			if( typeof modal_options.escClose !== 'undefined' ) modalOptions.escClose = modal_options.escClose;
+		}
+		closable = modalOptions.bgClose !== false || modalOptions.escClose !== false;
+
+		if( closable ) {
+			let closeBtn = document.createElement( 'button' );
+			closeBtn.className = 'uk-modal-close-default';
+			closeBtn.type = 'button';
+			closeBtn.setAttribute( 'uk-close', '' );
+			modalDialog.prepend( closeBtn );
+		}
+
 		modal.appendChild( modalDialog );
 		document.body.appendChild( modal );
 
-		// For this we have to use jquery, because bootstrap modals depend on them. Also the bs.modal
-		// events require jquery, as they cannot be handled by addEventListener()
-		$(modal)
-			.on( 'hide.bs.modal', function( e ) {
-				if( document.forms.formFile && self.fileChanged && !self.isModalClosedByButton ) {
-					self.log( "Prevented closing modal because the file was changed and no button was clicked." );
-					e.preventDefault();
-				} else
-					$(this).remove();
-			})
-			.on( 'shown.bs.modal', function( e ) {
-				let formElements = $(this).find('input, button');
-				if( formElements.length > 0 ) {
-					formElements.first().focus();
-				}
-			})
-			.modal(modal_options)
-			.modal('show');
+		self.modalElement = modal;
+		self.modalInstance = UIkit.modal( modal, modalOptions );
+
+		modal.addEventListener( 'beforehide', function( e ) {
+			if( document.forms.formFile && self.fileChanged && !self.isModalClosedByButton ) {
+				self.log( "Prevented closing modal because the file was changed and no button was clicked." );
+				e.preventDefault();
+			}
+		});
+
+		modal.addEventListener( 'shown', function() {
+			let formElements = modal.querySelectorAll( 'input, button, textarea, select' );
+			if( formElements.length > 0 ) {
+				formElements[0].focus();
+			}
+		});
+
+		modal.addEventListener( 'hidden', function() {
+			modal.remove();
+			self.modalInstance = null;
+			self.modalElement = null;
+			self.isModalClosedByButton = false;
+		});
+
+		self.modalInstance.show();
 	};
 
 	/**
-	 * Hides a the current bootstrap modal
+	 * Hides the current UIkit modal
 	 */
 	this.hideModal = function() {
-		// Hide the modal via jquery to get the hide.bs.modal event triggered
-		$( '#ifmmodal' ).modal( 'hide' );
-		self.isModalClosedByButton = false;
+		if( self.modalInstance ) {
+			self.modalInstance.hide();
+		} else if( document.getElementById( 'ifmmodal' ) ) {
+			UIkit.modal( '#ifmmodal' ).hide();
+		}
 	};
 
 	/**
@@ -138,7 +167,7 @@ function IFM(params) {
 					item.download.icon = "icon icon-download";
 				}
 				if ((item.icon.indexOf( 'file-image' ) !== -1) && (ISMOBILE == false)) {
-					item.popover = 'data-toggle="popover"';
+					item.preview = true;
 				}
 				if( self.config.extract && self.inArray( item.ext, ["zip","tar","tgz","tar.gz","tar.xz","tar.bz2"] ) ) {
 					item.eaction = "extract";
@@ -232,23 +261,7 @@ function IFM(params) {
 			stateSave: true,
 			responsive: true,
 			drawCallback: function() {
-				// has to be jquery, since this is a bootstrap feature
-				$( 'a[data-toggle="popover"]' ).popover({
-					content: function() {
-						let item = self.fileCache.find( x => x.guid == $(this).attr('id') );
-						let popover = document.createElement( 'img' );
-						if( self.config.isDocroot )
-							popover.src = encodeURI( self.pathCombine( self.currentDir, item.name ) ).replace( /#/g, '%23' ).replace( /\?/g, '%3F' );
-						else
-							popover.src = self.api + "?api=proxy&dir=" + encodeURIComponent( self.currentDir ) + "&filename=" + encodeURIComponent( item.name );
-						popover.classList.add( 'imgpreview' );
-						return popover;
-					},
-					animated: 'fade',
-					placement: 'bottom',
-					trigger: 'hover',
-					html: true
-				});
+				self.attachPreviewHandlers();
 			}
 		});
 
@@ -466,6 +479,55 @@ function IFM(params) {
 		}
 	};
 
+	this.getPreviewCard = function() {
+		if( !self.previewCard ) {
+			let card = document.createElement( 'div' );
+			card.className = 'ifm-preview';
+			let img = document.createElement( 'img' );
+			card.appendChild( img );
+			document.body.appendChild( card );
+			self.previewCard = card;
+		}
+		return self.previewCard;
+	};
+
+	this.positionPreviewCard = function( preview, evt ) {
+		if( !preview ) return;
+		let offset = 18;
+		let left = evt.clientX + offset;
+		let top = evt.clientY + offset;
+		if( preview.offsetWidth )
+			left = Math.min( window.innerWidth - preview.offsetWidth - 10, left );
+		if( preview.offsetHeight )
+			top = Math.min( window.innerHeight - preview.offsetHeight - 10, top );
+		preview.style.left = left + 'px';
+		preview.style.top = top + 'px';
+	};
+
+	this.attachPreviewHandlers = function() {
+		let preview = self.getPreviewCard();
+		if( preview ) preview.classList.remove( 'visible' );
+		document.querySelectorAll( '#filetable a[data-preview="image"]' ).forEach( function( anchor ) {
+			anchor.onmouseenter = function( evt ) {
+				let item = self.fileCache.find( x => x.guid === anchor.id );
+				if( !item ) return;
+				let img = preview.querySelector( 'img' );
+				if( self.config.isDocroot )
+					img.src = encodeURI( self.pathCombine( self.currentDir, item.name ) ).replace( /#/g, '%23' ).replace( /\?/g, '%3F' );
+				else
+					img.src = self.api + "?api=proxy&dir=" + encodeURIComponent( self.currentDir ) + "&filename=" + encodeURIComponent( item.name );
+				preview.classList.add( 'visible' );
+				self.positionPreviewCard( preview, evt );
+			};
+			anchor.onmousemove = function( evt ) {
+				self.positionPreviewCard( preview, evt );
+			};
+			anchor.onmouseleave = function() {
+				preview.classList.remove( 'visible' );
+			};
+		});
+	};
+
 	/**
 	 * Changes the current directory
 	 *
@@ -509,12 +571,7 @@ function IFM(params) {
 				e.preventDefault();
 		});
 		form.addEventListener( 'click', function( e ) {
-			if( e.target.id == "buttonSave" ) {
-				e.preventDefault();
-				self.saveFile( document.querySelector( '#formFile input[name=filename]' ).value, self.editor.getValue() );
-				self.isModalClosedByButton = true;
-				self.hideModal();
-			} else if( e.target.id == "buttonSaveNotClose" ) {
+			if( e.target.id == "buttonSaveNotClose" ) {
 				e.preventDefault();
 				self.saveFile( document.querySelector( '#formFile input[name=filename]' ).value, self.editor.getValue() );
 			} else if( e.target.id == "buttonClose" ) {
@@ -524,62 +581,6 @@ function IFM(params) {
 			}
 		});
 
-		$('#editoroptions').popover({
-			html: true,
-			title: self.i18n.options,
-			content: function() {
-				// see https://github.com/twbs/bootstrap/issues/12571
-				// var ihatethisfuckingpopoverworkaround = $('#editoroptions').data('bs.popover');
-				// $(ihatethisfuckingpopoverworkaround.tip).find( '.popover-body' ).empty();
-
-				let aceEditor = self.editor;
-				let aceSession = aceEditor.getSession();
-				let content = self.getNodeFromString(
-					Mustache.render(
-						self.templates.file_editoroptions,
-						{
-							wordwrap: ( aceSession.getOption( 'wrap' ) == 'off' ? false : true ),
-							invisible_chars: aceEditor.getOption( 'showInvisibles' ),
-							softtabs: aceSession.getOption( 'useSoftTabs' ),
-							tabsize: aceSession.getOption( 'tabSize' ),
-							ace_includes: self.ace,
-							ace_mode_selected: function() {
-								return ( aceSession.$modeId == "ace/mode/"+this ) ? 'selected="selected"' : '';
-							},
-							i18n: self.i18n
-						}
-					)
-				);
-				if( el = content.querySelector("#editor-wordwrap" )) {
-					el.addEventListener( 'change', function( e ) {
-						aceSession.setOption( 'wrap', e.srcElement.checked );
-					});
-				}
-				if( el = content.querySelector("#editor-invisible-chars")) {
-					el.addEventListener( 'change', function( e ) {
-						aceEditor.setOption( 'showInvisibles', e.srcElement.checked );
-					});
-				}
-				if( el = content.querySelector("#editor-softtabs" ))
-					el.addEventListener( 'change', function( e ) {
-						aceSession.setOption( 'useSoftTabs', e.srcElement.checked );
-					});
-				if( el = content.querySelector("#editor-tabsize" )) {
-					el.addEventListener( 'change', function( e ) {
-						aceSession.setOption( 'tabSize', e.srcElement.value );
-					});
-				}
-				if( el = content.querySelector("#editor-syntax" )) {
-					el.addEventListener( 'change', function( e ) {
-						aceSession.getSession().setMode( e.target.value );
-					});
-				}
-				return content;
-
-			}
-		});
-
-		// Start ACE
 		self.editor = ace.edit("content");
 		self.editor.$blockScrolling = 'Infinity';
 		self.editor.getSession().setValue(content);
@@ -597,7 +598,7 @@ function IFM(params) {
 				let el = e.container;
 				if (el.parentElement.tagName == "BODY") {
 					el.remove();
-					let fieldset = document.getElementsByClassName('modal-body')[0].firstElementChild;
+					let fieldset = document.getElementsByClassName('ifm-modal-body')[0].firstElementChild;
 					fieldset.insertBefore(el, fieldset.getElementsByTagName('button')[0].previousElementSibling);
 					el.style = Object.assign({}, ifm.tmpEditorStyles);
 					ifm.tmpEditorStyles = undefined;
@@ -616,6 +617,76 @@ function IFM(params) {
 				e.focus();
 			}
 		});
+
+		let editorOptionsButton = document.getElementById( 'editoroptions' );
+		let editorOptionsPanel = document.getElementById( 'editoroptions-panel' );
+		let renderEditorOptions = function() {
+			let aceEditor = self.editor;
+			let aceSession = aceEditor.getSession();
+			let content = self.getNodeFromString(
+				Mustache.render(
+					self.templates.file_editoroptions,
+					{
+						wordwrap: ( aceSession.getOption( 'wrap' ) == 'off' ? false : true ),
+						invisible_chars: aceEditor.getOption( 'showInvisibles' ),
+						softtabs: aceSession.getOption( 'useSoftTabs' ),
+						tabsize: aceSession.getOption( 'tabSize' ),
+						ace_includes: self.ace,
+						ace_mode_selected: function() {
+							return ( aceSession.$modeId == "ace/mode/"+this ) ? 'selected="selected"' : '';
+						},
+						i18n: self.i18n
+					}
+				)
+			);
+			let el;
+			if( el = content.querySelector("#editor-wordwrap" )) {
+				el.addEventListener( 'change', function( e ) {
+					aceSession.setOption( 'wrap', e.target.checked );
+				});
+			}
+			if( el = content.querySelector("#editor-invisible-chars")) {
+				el.addEventListener( 'change', function( e ) {
+					aceEditor.setOption( 'showInvisibles', e.target.checked );
+				});
+			}
+			if( el = content.querySelector("#editor-softtabs" ))
+				el.addEventListener( 'change', function( e ) {
+					aceSession.setOption( 'useSoftTabs', e.target.checked );
+				});
+			if( el = content.querySelector("#editor-tabsize" )) {
+				el.addEventListener( 'change', function( e ) {
+					aceSession.setOption( 'tabSize', e.target.value );
+				});
+			}
+			if( el = content.querySelector("#editor-syntax" )) {
+				el.addEventListener( 'change', function( e ) {
+					aceSession.getSession().setMode( e.target.value );
+				});
+			}
+			let wrapper = document.createElement( 'div' );
+			wrapper.className = 'uk-card uk-card-default uk-card-body uk-box-shadow-large';
+			wrapper.appendChild( content );
+			return wrapper;
+		};
+
+		if( editorOptionsButton && editorOptionsPanel ) {
+			editorOptionsButton.addEventListener( 'click', function( e ) {
+				e.preventDefault();
+				editorOptionsPanel.innerHTML = '';
+				editorOptionsPanel.appendChild( renderEditorOptions() );
+				editorOptionsPanel.classList.toggle( 'uk-hidden' );
+			});
+
+			if( self.modalElement ) {
+				self.modalElement.addEventListener( 'click', function( e ) {
+					if( !editorOptionsPanel.classList.contains( 'uk-hidden' ) && !editorOptionsPanel.contains( e.target ) && e.target.id !== 'editoroptions' ) {
+						editorOptionsPanel.classList.add( 'uk-hidden' );
+					}
+				});
+			}
+		}
+
 	};
 
 	/**
@@ -1344,18 +1415,13 @@ function IFM(params) {
 	 * @param string t - message type (e: error, s: success)
 	 */
 	this.showMessage = function(m, t) {
-		let msgType = ( t == "e" ) ? "danger" : ( t == "s" ) ? "success" : "info";
-		let offsetY = ( document.activeElement.tagName == "BODY" ) ? 15 : 70;
-		$.notify(
-			{ message: m },
-			{ type: msgType, delay: 3000, mouse_over: 'pause', 
-				offset: { x: 0, y: offsetY }, 
-				placement: {
-					from: "bottom",
-					align: "right"
-				},
-			element: document.activeElement }
-		);
+		let msgType = ( t == "e" ) ? "danger" : ( t == "s" ) ? "success" : "primary";
+		UIkit.notification({
+			message: m,
+			status: msgType,
+			pos: 'bottom-right',
+			timeout: 3500
+		});
 	};
 
 	/**
@@ -1503,11 +1569,12 @@ function IFM(params) {
 			self.log( "Error: No task id given.");
 			return false;
 		}
-		if( ! document.querySelector( "footer" ) ) {
+		if( ! document.querySelector( "footer.ifm-footer" ) ) {
 			let newFooter = self.getNodeFromString( Mustache.render( self.templates.footer, { i18n: self.i18n } ) );
 			newFooter.addEventListener( 'click', function( e ) {
-				if( e.target.name == 'showAll' || e.target.parentElement.name == "showAll" ) {
-					wq = newFooter.children.wq_container.children[0].children.waitqueue;
+				let toggle = e.target.closest( '[name="showAll"]' );
+				if( toggle ) {
+					let wq = document.getElementById( 'waitqueue' );
 					if( wq.style.maxHeight == '70vh' ) {
 						wq.style.maxHeight = '6rem';
 						wq.style.overflow = 'hidden';
@@ -1536,7 +1603,8 @@ function IFM(params) {
 		document.getElementById( 'wq-' + id ).remove();
 		let wq = document.getElementById( 'waitqueue' );
 		if( wq.children.length == 0 ) {
-			document.getElementsByTagName( 'footer' )[0].remove();
+			let footer = document.querySelector( 'footer.ifm-footer' );
+			if( footer ) footer.remove();
 			document.body.style.paddingBottom = 0;
 		} else {
 			document.getElementsByName( 'taskCount' )[0].innerText = wq.children.length;
@@ -1966,16 +2034,20 @@ function IFM(params) {
 										self.hideModal();
 										self.initApplication();
 									} else {
-										var errorlogin = document.getElementsByClassName('alert')[0];
-										errorlogin.classList.remove("d-none");
-										errorlogin.innerHTML = e.message;
+										let errorlogin = document.getElementById('loginError');
+										if( errorlogin ) {
+											errorlogin.classList.remove("uk-hidden");
+											errorlogin.innerHTML = e.message;
+										}
 									}
 
 								},
 								error: function(e) {
-									var errorlogin = document.getElementsByClassName('alert')[0];
-									errorlogin.classList.remove("d-none");
-									errorlogin.innerHTML = "Authentication failed";
+									let errorlogin = document.getElementById('loginError');
+									if( errorlogin ) {
+										errorlogin.classList.remove("uk-hidden");
+										errorlogin.innerHTML = "Authentication failed";
+									}
 								}
 							});
 						}
@@ -2032,7 +2104,7 @@ function IFM(params) {
 					e.preventDefault();
 					e.stopPropagation();
 					let div = document.getElementById( 'filedropoverlay' );
-					div.style.display = 'block';
+					div.style.display = 'flex';
 					div.ondrop = function( e ) {
 						e.preventDefault();
 						e.stopPropagation();
@@ -2058,8 +2130,8 @@ function IFM(params) {
 					};
 				} else {
 					let div = document.getElementById( 'filedropoverlay' );
-					if( div.style.display == 'block' )
-						div.stye.display == 'none';
+					if( div && div.style.display != 'none' )
+						div.style.display = 'none';
 				}
 			});
 
