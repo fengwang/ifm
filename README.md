@@ -91,13 +91,13 @@ docker build -t ifm .
 docker run --rm -d --name ifm \
   -p 8080:80 \
   -v /path/to/data:/var/www \
-  ifm:latest
+  ifm
 ```
 
 ### UID/GID
 Run as a specific user/group:
 ```bash
-docker run ... -e IFM_DOCKER_UID=1000 -e IFM_DOCKER_GID=1000 ifm:latest
+docker run ... -e IFM_DOCKER_UID=1000 -e IFM_DOCKER_GID=1000 ifm
 ```
 
 ### Other notes
