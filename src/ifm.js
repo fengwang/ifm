@@ -13,6 +13,7 @@ function IFM(params) {
 
 	// desktop browser not support window.orientation
 	const ISMOBILE = typeof window.orientation !== 'undefined';
+	const uiHelpers = globalThis.IFMUiHelpers;
 
 	this.editor = null;		// global ace editor
 	this.fileChanged = false;	// flag for check if file was changed already
@@ -144,61 +145,32 @@ function IFM(params) {
 		data.forEach( function( item ) {
 			item.guid = self.generateGuid();
 			item.linkname = ( item.name == ".." ) ? "[ up ]" : item.name;
-			if( item.name == ".." )
-				item.fixtop = 100;
+			item.sortbucket = uiHelpers.getSortBucket( item );
 			item.download = {};
 			item.download.name = ( item.name == ".." ) ? "." : item.name;
-			item.lastmodified_hr = self.formatDate( item.lastmodified );
+			let modifiedParts = self.formatExactDateParts( item.lastmodified );
+			item.lastmodified_primary = modifiedParts.primary;
+			item.lastmodified_detail = modifiedParts.detail;
+			item.lastmodified_relative = self.formatRelativeDate( item.lastmodified );
 			if( ! self.config.chmod )
 				item.readonly = "readonly";
-			if( self.config.edit || self.config.rename || self.config.delete || self.config.extract || self.config.copymove ) {
-				item.ftbuttons = true;
-				item.button = [];
-			}
 			if( item.type == "dir" ) {
 				if( self.config.download && self.config.zipnload ) {
 					item.download.action = "zipnload";
-					item.download.icon = "icon icon-download-cloud";
 				}
 				item.rowclasses = "isDir";
 			} else {
 				if( self.config.download ) {
 					item.download.action = "download";
-					item.download.icon = "icon icon-download";
 				}
 				if ((item.icon.indexOf( 'file-image' ) !== -1) && (ISMOBILE == false)) {
 					item.preview = true;
 				}
-				if( self.config.extract && self.inArray( item.ext, ["zip","tar","tgz","tar.gz","tar.xz","tar.bz2"] ) ) {
-					item.eaction = "extract";
-					item.button.push({
-						action: "extract",
-						icon: "icon icon-archive",
-						title: "extract"
-					});
-				} else if(
-					self.config.edit &&
-					(
-						self.config.disable_mime_detection ||
-						(
-							typeof item.mime_type === "string" && (
-								item.mime_type.substr( 0, 4 ) == "text"
-								|| item.mime_type.indexOf("x-empty") != -1
-								|| item.mime_type.indexOf("xml") != -1
-								|| item.mime_type.indexOf("json") != -1
-							)
-						)
-					)
-				) {
-					item.eaction = "edit";
-					item.button.push({
-						action: "edit",
-						icon: "icon icon-pencil",
-						title: "edit"
-					});
-				}
 			}
-			item.download.link = self.api+"?api="+item.download.action+"&dir="+self.hrefEncode(self.currentDir)+"&filename="+self.hrefEncode(item.download.name);
+			item.eaction = uiHelpers.getEntryAction( item, self.config ) || "";
+			item.download.link = item.download.action
+				? self.api+"?api="+item.download.action+"&dir="+self.hrefEncode(self.currentDir)+"&filename="+self.hrefEncode(item.download.name)
+				: '#';
 			if( self.config.isDocroot && !self.config.forceproxy )
 				item.link = self.hrefEncode( self.pathCombine( window.location.path, self.currentDir, item.name ) );
 			else if (self.config.download && self.config.zipnload) {
@@ -213,25 +185,15 @@ function IFM(params) {
 				item.link = '#';
 			if( ! self.inArray( item.name, [".", ".."] ) ) {
 				item.dragdrop = 'draggable="true"';
-				if( self.config.copymove )
-					item.button.push({
-						action: "copymove",
-						icon: "icon icon-folder-open-empty",
-						title: "copy/move"
-					});
-				if( self.config.rename )
-					item.button.push({
-						action: "rename",
-						icon: "icon icon-terminal",
-						title: "rename"
-					});
-				if( self.config.delete )
-					item.button.push({
-						action: "delete",
-						icon: "icon icon-trash",
-						title: "delete"
-					});
 			}
+			item.button = uiHelpers.buildRowButtons( {
+				name: item.name,
+				type: item.type,
+				ext: item.ext,
+				mime_type: item.mime_type,
+				downloadAction: item.download.action
+			}, self.config );
+			item.ftbuttons = item.button.length > 0;
 		});
 
 		// save items to file cache
@@ -246,15 +208,20 @@ function IFM(params) {
 		filetable.tBodies[0].innerHTML = newTBody;
 
 		if( self.datatable ) self.datatable.destroy();
+		let headerCells = Array.prototype.slice.call( filetable.tHead.rows[0].cells );
+		let modifiedColumnIndex = headerCells.findIndex( function( cell ) {
+			return cell.classList.contains( 'th-lastmod' );
+		});
 		self.datatable = $('#filetable').DataTable({
 			paging: !!self.config.paging,
 			pageLength: self.config.pageLength||50,
 			info: false,
 			autoWidth: false,
 			columnDefs: [
-				{ "orderable": false, "targets": ["th-download","th-permissions","th-buttons"] }
+				{ "orderable": false, "targets": ["th-buttons"] }
 			],
 			orderFixed: [0, 'desc'],
+			order: modifiedColumnIndex !== -1 ? [[modifiedColumnIndex, 'desc']] : [[1, 'asc']],
 			language: {
 				"search": self.i18n.filter
 			},
@@ -298,6 +265,9 @@ function IFM(params) {
 						break;
 					case "edit":
 						self.editFile( item.name );
+						break;
+					case "download":
+						window.location = item.download.link;
 						break;
 					case "delete":
 						self.showDeleteDialog( item );
@@ -440,7 +410,7 @@ function IFM(params) {
 								window.location = data.clicked.download.link;
 						},
 						iconClass: "icon icon-download",
-						isShown: function() { return !!self.config.download; }
+						isShown: function( data ) { return !!( self.config.download && data.clicked.download && data.clicked.download.action ); }
 					},
 					createarchive: {
 						name: function( data ) {
@@ -1461,23 +1431,7 @@ function IFM(params) {
 	 * @returns {string} - formatted date
 	 */
 	this.customStrftime = function(date, format) {
-		const pad = (num, size = 2) => String(num).padStart(size, '0');
-
-		const replacements = {
-			'%Y': date.getFullYear(),
-			'%m': pad(date.getMonth() + 1),
-			'%d': pad(date.getDate()),
-			'%H': pad(date.getHours()),
-			'%M': pad(date.getMinutes()),
-			'%S': pad(date.getSeconds()),
-			'%y': String(date.getFullYear()).slice(-2),
-			'%b': date.toLocaleString('default', { month: 'short' }),
-			'%B': date.toLocaleString('default', { month: 'long' }),
-			'%a': date.toLocaleString('default', { weekday: 'short' }),
-			'%A': date.toLocaleString('default', { weekday: 'long' }),
-		};
-
-		return format.replace(/%[a-zA-Z]/g, match => replacements[match] || match);
+		return uiHelpers.customStrftime( date, format, navigator.language || "en-US" );
 	};
 
 	/**
@@ -1510,13 +1464,27 @@ function IFM(params) {
 	 * @param {integer} timestamp - UNIX timestamp
 	 */
 	this.formatDate = function(timestamp) {
-		let d = new Date(timestamp * 1000)
+		return self.formatExactDate( timestamp );
+	};
 
-		if (self.config.customDateFormat) {
-			return self.customStrftime(d, self.config.customDateFormat)
-		} else {
-			return d.toLocaleString(navigator.language || "en-US");
-		}
+	this.formatExactDate = function(timestamp) {
+		return uiHelpers.formatExactDate( timestamp, {
+			customDateFormat: self.config.customDateFormat,
+			locale: navigator.language || "en-US"
+		});
+	};
+
+	this.formatExactDateParts = function(timestamp) {
+		return uiHelpers.formatExactDateParts( timestamp, {
+			customDateFormat: self.config.customDateFormat,
+			locale: navigator.language || "en-US"
+		});
+	};
+
+	this.formatRelativeDate = function(timestamp) {
+		return uiHelpers.formatRelativeTime( timestamp, {
+			locale: navigator.language || "en-US"
+		} );
 	};
 
 	this.getClipboardLink = function( relpath ) {
