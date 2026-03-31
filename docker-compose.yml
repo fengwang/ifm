@@ -9,6 +9,7 @@ services:
     environment:
       IFM_DOCKER_UID: "${IFM_DOCKER_UID:-1000}"
       IFM_DOCKER_GID: "${IFM_DOCKER_GID:-1000}"
+      IFM_SHOWLASTMODIFIED: "${IFM_SHOWLASTMODIFIED:-1}"
       # Add other IFM_* overrides here or via a local .env file.
       # IFM_AUTH: "1"
       # IFM_AUTH_SOURCE: "inline;admin:<hash>"
