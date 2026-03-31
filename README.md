@@ -72,6 +72,7 @@ docker compose down
 - Default data mount: `./data:/var/www`
 - Default published port: `8080`
 - Default runtime user/group inside the container: `1000:1000`
+- Modified date column enabled by default: `IFM_SHOWLASTMODIFIED=1`
 - Add other `IFM_*` overrides directly in `docker-compose.yml` or through a local `.env` file
 
 Example `.env`:
@@ -79,6 +80,7 @@ Example `.env`:
 IFM_HTTP_PORT=8080
 IFM_DOCKER_UID=1000
 IFM_DOCKER_GID=1000
+IFM_SHOWLASTMODIFIED=1
 ```
 
 ### Manual build

@@ -42,8 +42,17 @@
 		});
 	}
 
+	function isValidTimestamp(timestamp) {
+		return Number.isFinite(Number(timestamp));
+	}
+
 	function formatExactDate(timestamp, options) {
 		const settings = options || {};
+
+		if( ! isValidTimestamp(timestamp) ) {
+			return '';
+		}
+
 		const date = new Date(timestamp * 1000);
 		const locale = settings.locale || 'en-US';
 
@@ -56,6 +65,14 @@
 
 	function formatExactDateParts(timestamp, options) {
 		const settings = options || {};
+
+		if( ! isValidTimestamp(timestamp) ) {
+			return {
+				primary: '',
+				detail: ''
+			};
+		}
+
 		const date = new Date(timestamp * 1000);
 		const locale = settings.locale || 'en-US';
 
@@ -74,6 +91,11 @@
 
 	function formatRelativeTime(timestamp, options) {
 		const settings = options || {};
+
+		if( ! isValidTimestamp(timestamp) ) {
+			return '';
+		}
+
 		const nowMs = typeof settings.nowMs === 'number' ? settings.nowMs : Date.now();
 		const locale = settings.locale || 'en-US';
 		const diffSeconds = Math.round(((timestamp * 1000) - nowMs) / 1000);

@@ -44,6 +44,25 @@ test('formatRelativeTime returns human readable relative time', () => {
   assert.equal(result, '2 hours ago');
 });
 
+test('formatExactDateParts returns empty values for missing timestamps', () => {
+  const result = helpers.formatExactDateParts(undefined, {
+    locale: 'en-US'
+  });
+
+  assert.deepEqual(result, {
+    primary: '',
+    detail: ''
+  });
+});
+
+test('formatRelativeTime returns empty string for missing timestamps', () => {
+  const result = helpers.formatRelativeTime(undefined, {
+    locale: 'en-US'
+  });
+
+  assert.equal(result, '');
+});
+
 test('buildRowButtons unifies file actions into a single action rail', () => {
   const result = helpers.buildRowButtons({
     name: 'notes.txt',
