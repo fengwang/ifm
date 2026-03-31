@@ -1,0 +1,16 @@
+services:
+  ifm:
+    build:
+      context: .
+    image: ifm:latest
+    restart: unless-stopped
+    ports:
+      - "${IFM_HTTP_PORT:-8080}:80"
+    environment:
+      IFM_DOCKER_UID: "${IFM_DOCKER_UID:-1000}"
+      IFM_DOCKER_GID: "${IFM_DOCKER_GID:-1000}"
+      # Add other IFM_* overrides here or via a local .env file.
+      # IFM_AUTH: "1"
+      # IFM_AUTH_SOURCE: "inline;admin:<hash>"
+    volumes:
+      - ./data:/var/www

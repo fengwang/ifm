@@ -1,53 +1,30 @@
 {{#items}}
 <tr class="clickable-row {{rowclasses}}" {{{dragdrop}}} data-id="{{guid}}" data-filename="{{name}}" data-eaction="{{eaction}}">
-	{{#fixtop}}
-	<td class="uk-table-shrink" data-order="{{fixtop}}"></td>
-	{{/fixtop}}
-	{{^fixtop}}
-	<td class="uk-table-shrink" data-order="0"></td>
-	{{/fixtop}}
-	<td class="uk-text-truncate">
+	<td class="uk-table-shrink" data-order="{{sortbucket}}"></td>
+	<td class="uk-text-truncate ifm-filename-cell">
 		<a href="{{{link}}}" tabindex="0" id="{{guid}}" class="ifmitem uk-link-reset" {{#preview}}data-preview="image"{{/preview}} data-type="{{type}}">
 			<span class="{{icon}}"></span>
 			{{linkname}}
 		</a>
 	</td>
-	{{#config.download}}
-	<td class="uk-text-center uk-table-shrink">
-		<a class="uk-icon-button uk-button-default uk-border-circle ifm-icon-button" href="{{download.link}}" uk-tooltip="title: {{i18n.download}}">
-			<span class="{{download.icon}}"></span>
-		</a>
-	</td>
-	{{/config.download}}
 	{{#config.showlastmodified}}
-	<td class="uk-visible@s" data-order="{{lastmodified}}">{{lastmodified_hr}}</td>
+	<td class="uk-visible@s ifm-date-cell" data-order="{{lastmodified}}">
+		<div class="ifm-date-primary">{{lastmodified_primary}}</div>
+		{{#lastmodified_detail}}
+		<div class="ifm-date-detail">{{lastmodified_detail}}</div>
+		{{/lastmodified_detail}}
+		<div class="ifm-date-secondary">{{lastmodified_relative}}</div>
+	</td>
 	{{/config.showlastmodified}}
 	{{#config.showfilesize}}
-	<td class="uk-visible@s uk-text-right" data-order="{{size_raw}}">{{size}}</td>
+	<td class="uk-visible@s uk-text-right ifm-size-cell" data-order="{{size_raw}}">{{size}}</td>
 	{{/config.showfilesize}}
-	{{#config.showpermissions}}
-	<td class="uk-visible@m uk-text-center">
-		<input type="text" size="11" name="newpermissions" class="uk-input uk-form-small ifm-permission-input {{filepermmode}}" value="{{fileperms}}" data-filename="{{name}}" {{readonly}}>
-	</td>
-	{{/config.showpermissions}}
-	{{#config.showowner}}
-	<td class="uk-visible@l">
-		{{owner}}
-	</td>
-	{{/config.showowner}}
-	{{#config.showgroup}}
-	<td class="uk-visible@xl">
-		{{group}}
-	</td>
-	{{/config.showgroup}}
-	<td class="uk-table-shrink">
-		<div class="uk-flex uk-flex-right uk-flex-middle uk-grid-small ifm-row-actions" uk-grid>
+	<td class="ifm-actions-cell">
+		<div class="ifm-row-actions" role="group" aria-label="File actions">
 			{{#button}}
-			<div>
-				<a tabindex="0" name="do-{{action}}" data-id="{{guid}}" class="uk-icon-button uk-button-default uk-border-circle ifm-icon-button" uk-tooltip="title: {{title}}">
-					<span class="{{icon}}"></span>
-				</a>
-			</div>
+			<a tabindex="0" name="do-{{action}}" data-id="{{guid}}" class="uk-icon-button uk-button-default uk-border-circle ifm-icon-button" uk-tooltip="title: {{title}}">
+				<span class="{{icon}}"></span>
+			</a>
 			{{/button}}
 		</div>
 	</td>

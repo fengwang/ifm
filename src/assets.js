@@ -11,5 +11,6 @@
 ###file:src/includes/mustache.min.js###
 ###file:src/includes/ace.min.js###
 ###acedir:src/includes/ace###
+###file:src/ifm-ui-helpers.js###
 ###file:src/ifm.js###
 </script>

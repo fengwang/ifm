@@ -1,7 +1,20 @@
 #!/bin/sh
 set -e
 
-if [ -n $IFM_DOCKER_UID ]; then
+align_ifm_root_owner() {
+	IFM_RUNTIME_ROOT="${IFM_ROOT_DIR:-/var/www}"
+
+	case "$IFM_RUNTIME_ROOT" in
+		/*) ;;
+		*) IFM_RUNTIME_ROOT="/usr/local/share/webapps/ifm/$IFM_RUNTIME_ROOT" ;;
+	esac
+
+	if [ -d "$IFM_RUNTIME_ROOT" ]; then
+		chown -R "$(id -u www-data):$(id -g www-data)" "$IFM_RUNTIME_ROOT"
+	fi
+}
+
+if [ -n "$IFM_DOCKER_UID" ]; then
 	# check if UID/GID are numeric
 	if ! echo "$IFM_DOCKER_UID$IFM_DOCKER_GID" | grep -E "^[0-9]+$" >/dev/null 2>&1; then
 		echo "FATAL: IFM_DOCKER_UID or IFM_DOCKER_GID are not numeric (UID: $IFM_DOCKER_UID, GID: $IFM_DOCKER_GID)"
@@ -32,4 +45,6 @@ else
 	adduser -SHD -u 33 -G www-data www-data
 fi
 
-sudo -Eu www-data /usr/local/bin/php -c /usr/local/share/webapps/ifm/php.ini -S 0:80 -t /usr/local/share/webapps/ifm
+align_ifm_root_owner
+
+exec sudo -Eu www-data /usr/local/bin/php -c /usr/local/share/webapps/ifm/php.ini -S 0:80 -t /usr/local/share/webapps/ifm

@@ -1,0 +1,7 @@
+{
+  "name": "ifm-ui-tests",
+  "private": true,
+  "scripts": {
+    "test": "node --test"
+  }
+}

@@ -108,25 +108,13 @@
 							<tr>
 								<th class="th-meta hidden never uk-table-shrink" data-visible="false"></th>
 								<th class="th-filename all">{{i18n.filename}}</th>
-								{{#config.download}}
-								<th class="th-download all uk-table-shrink uk-text-center"></th>
-								{{/config.download}}
 								{{#config.showlastmodified}}
 								<th class="th-lastmod tablet-l desktop uk-visible@s">{{i18n.last_modified}}</th>
 								{{/config.showlastmodified}}
 								{{#config.showfilesize}}
 								<th class="th-size tablet-p tablet-l desktop uk-visible@s">{{i18n.size}}</th>
 								{{/config.showfilesize}}
-								{{#config.showpermissions}}
-								<th class="th-permissions tablet-p tablet-l desktop uk-visible@m">{{i18n.permissions}}</th>
-								{{/config.showpermissions}}
-								{{#config.showowner}}
-								<th class="th-owner tablet-l desktop uk-visible@l">{{i18n.owner}}</th>
-								{{/config.showowner}}
-								{{#config.showgroup}}
-								<th class="th-group desktop uk-visible@xl">{{i18n.group}}</th>
-								{{/config.showgroup}}
-								<th class="th-buttons buttons all uk-table-shrink"></th>
+								<th class="th-buttons buttons all"></th>
 							</tr>
 						</thead>
 						<tbody></tbody>
@@ -135,8 +123,8 @@
 			</div>
 
 			<div class="uk-flex uk-flex-between uk-flex-middle uk-text-meta uk-margin-top ifm-footer-meta">
-				<div>{{i18n.footer}} <a href='https://github.com/misterunknown/ifm/tree/IFM_VERSION' target=_blank>IFM_VERSION</a></div>
-				<a href="http://github.com/misterunknown/ifm" target="_blank">{{i18n.github}}</a>
+				<div>{{i18n.footer}} <a href='https://github.com/fengwang/ifm/tree/IFM_VERSION' target=_blank>IFM_VERSION</a></div>
+				<a href="http://github.com/fengwang/ifm" target="_blank">{{i18n.github}}</a>
 			</div>
 		</div>
 	</section>
